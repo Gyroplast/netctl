@@ -62,6 +62,16 @@ ip_set() {
                 return 1
             fi
           ;;
+          udhcpc)
+            rm -f "/run/udhcpc-${Interface}.pid"
+            # Calculate retries/pause to reflect defined TimeoutDHCP.
+            local _pause=2
+            local _retries=$((${TimeoutDHCP:-30} / ${_pause} + 1))
+            if ! do_debug udhcpc -n -p "/run/udhcpc-${Interface}.pid" --retries "${_retries:-10}" --timeout "${_pause:-3}" $UdhcpcOptions -i "$Interface"; then
+                report_error "DHCP IP lease attempt failed on interface '$Interface'"
+                return 1
+            fi
+          ;;
           *)
             report_error "Unsupported DHCP client: '$DHCPClient'"
             return 1
@@ -190,6 +200,12 @@ ip_unset() {
             if [[ -f "/run/dhclient-$Interface.pid" ]]; then
                 is_yes "${DHCPReleaseOnStop:-no}" && stop="-r"
                 do_debug dhclient -q $stop "$Interface" -pf "/run/dhclient-$Interface.pid" >/dev/null
+            fi
+          ;;
+          udhcpc)
+            if [[ -f "/run/udhcpc-$Interface.pid" ]]; then
+                is_yes "${DHCPReleaseOnStop:-no}" && do_debug kill -USR2 $(cat "/run/udhcpc-$Interface.pid" 2>/dev/null) >/dev/null
+                do_debug kill -TERM $(cat "/run/udhcpc-$Interface.pid" 2>/dev/null) >/dev/null
             fi
           ;;
         esac
