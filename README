@@ -6,7 +6,7 @@ Dependencies:
 - resolvconf
 
 Optional:
-- dhcpcd or dhclient: for DHCP support
+- dhcpcd, dhclient or udhcp: for DHCP support
 - wpa_supplicant: for WPA support
 - dialog: for the interactive assistant
 - ifplugd: for automatic connection
