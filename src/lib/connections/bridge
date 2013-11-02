@@ -9,6 +9,15 @@ bridge_up() {
         if [[ ! -d "/sys/class/net/$Interface/brif" ]]; then
             report_error "Interface '$Interface' already exists and is not a bridge"
             return 1
+        else
+            # interface exists and is a bridge
+            report_debug "Bridge interface '$Interface' already exists, bringing it down"
+            bring_interface_down "$Interface"
+
+            if is_interface "$Interface"; then
+                report_error "Interface '$Interface' already exists and could not be deactivated"
+                return 1
+            fi
         fi
     else
         ip link add name "$Interface" type bridge
@@ -35,7 +44,7 @@ bridge_down() {
 
     ip_unset
     bring_interface_down "$Interface"
-    ip link delete "$Interface" type bridge
+    ip link delete "$Interface" type bridge || true
 }
 
 

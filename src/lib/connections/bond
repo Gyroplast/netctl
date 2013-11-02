@@ -7,8 +7,13 @@ declare -ag BindsToInterfaces
 
 bond_up() {
     if is_interface "$Interface"; then
-        report_error "Interface '$Interface' already exists"
-        return 1
+        report_debug "Interface '$Interface' already exists, bringing it down"
+        bring_interface_down "$Interface"
+
+        if is_interface "$Interface"; then
+            report_error "Interface '$Interface' already exists and could not be deactivated"
+            return 1
+        fi
     else
         ip link add dev "$Interface" type bond
     fi
@@ -29,7 +34,7 @@ bond_down() {
 
     ip_unset
     bring_interface_down "$Interface"
-    ip link delete "$Interface"
+    ip link delete "$Interface" || true
 }
 
 
