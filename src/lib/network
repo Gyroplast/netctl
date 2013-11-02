@@ -32,6 +32,8 @@ bring_interface_up() {
 bring_interface_down() {
     local interface=$1
     ip link set dev "$interface" down &>/dev/null
+    # Take care of virtual interfaces like vlan, bond and bridges, too
+    ip link delete "$interface" &>/dev/null
     # We reuse the up timeout (down normally is faster)
     timeout_wait "${TimeoutUp:-5}" '! interface_is_up "$interface"'
 }

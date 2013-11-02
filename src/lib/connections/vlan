@@ -8,8 +8,13 @@ vlan_up() {
         return 1
     fi
     if is_interface "$Interface"; then
-        report_error "Interface '$Interface' already exists"
-        return 1
+        report_debug "Interface '$Interface' already exists, bringing it down"
+        bring_interface_down "$Interface"
+
+        if is_interface "$Interface"; then
+            report_error "Interface '$Interface' already exists and could not be deactivated"
+            return 1
+        fi
     else
         bring_interface_up "$BindsToInterfaces"
         ip link add link "$BindsToInterfaces" name "$Interface" type vlan id "$VLANID"
@@ -20,7 +25,7 @@ vlan_up() {
 
 vlan_down() {
     ethernet_down
-    ip link delete "$Interface"
+    ip link delete "$Interface" || true
 }
 
 # vim: ft=sh ts=4 et sw=4:
