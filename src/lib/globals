@@ -111,8 +111,8 @@ load_profile() {
         exit_error "Profile '$1' does not exist or is not readable"
     fi
     while read -r hook; do
-        source <(sed 's/\r$//' "$hook")
-    done < <(find -L "$PROFILE_DIR/hooks" -maxdepth 1 -type f -executable -not -name '.*' -not -name '*~' | sort -u)
+        [[ -x "$hook" ]] && source <(sed 's/\r$//' "$hook")
+    done < <(find -L "$PROFILE_DIR/hooks" -maxdepth 1 -type f -not -name '.*' -not -name '*~' | sort -u)
     source <(sed 's/\r$//' "$PROFILE_DIR/$1")
     if [[ -z $Interface ]]; then
         exit_error "Profile '$1' does not specify an interface"
