@@ -36,5 +36,4 @@ bond_down() {
     ip link delete "$Interface" || true
 }
 
-
 # vim: ft=sh ts=4 et sw=4:
