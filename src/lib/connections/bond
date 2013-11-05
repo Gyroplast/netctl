@@ -1,39 +1,38 @@
 # Contributed by: Byron Williams <byron@112percent.com>
+# Modified to work without ifenslave: Dennis Herbrich <dennis.herbrich@hytera.de>
 
 . "$SUBR_DIR/ip"
 
-: ${IFENSLAVE:=ifenslave}
 declare -ag BindsToInterfaces
 
 bond_up() {
     if is_interface "$Interface"; then
         report_debug "Interface '$Interface' already exists, bringing it down"
         bring_interface_down "$Interface"
+        ip link delete "$Interface" || true
 
         if is_interface "$Interface"; then
             report_error "Interface '$Interface' already exists and could not be deactivated"
             return 1
         fi
-    else
-        ip link add dev "$Interface" type bond
     fi
-    bring_interface_up "$Interface"
+
+    ip link add dev "$Interface" type bond
 
     for slave in "${BindsToInterfaces[@]}"; do
+        ip link set dev "$slave" master "$Interface"
         bring_interface_up "$slave"
-        $IFENSLAVE "$Interface" "$slave"
     done
 
+    bring_interface_up "$Interface"
     ip_set
 }
 
 bond_down() {
-    for slave in "${BindsToInterfaces[@]}"; do
-        $IFENSLAVE "$Interface" -d "$slave"
-    done
-
     ip_unset
     bring_interface_down "$Interface"
+
+    # slaves are released automatically and may still be bound to other masters
     ip link delete "$Interface" || true
 }
 
