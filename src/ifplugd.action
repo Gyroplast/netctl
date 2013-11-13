@@ -19,7 +19,7 @@ case "$2" in
     while read -r profile; do
         (
           echo "Reading profile '$profile'"
-          source "$PROFILE_DIR/$profile"
+          source <(sed 's/\r$//' "$PROFILE_DIR/$profile")
           [[ "$Interface" == "$1" && "$Connection" == "ethernet" ]] || continue
           is_yes "${AutoWired:-no}" && exit 1 # user preferred AUTO profile
           [[ "$IP" == "dhcp" ]] && exit 2 # dhcp profile

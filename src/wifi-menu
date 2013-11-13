@@ -27,7 +27,7 @@ init_profiles()
     while read profile; do
         essid=$(
             unset INTERFACE ESSID
-            source "$PROFILE_DIR/$profile" > /dev/null
+            source <(sed 's/\r$//' "$PROFILE_DIR/$profile") > /dev/null
             if [[ "$Interface" = "$1" && -n "$ESSID" ]]; then
                 printf "%s" "$ESSID"
                 if [[ "$Description" =~ "Automatically generated" ]]; then
