@@ -174,7 +174,7 @@ start() {
         exit_error "The interface ($interface) is already in use"
     fi
     if [[ -x "$PROFILE_DIR/interfaces/$interface" ]]; then
-        source "$PROFILE_DIR/interfaces/$interface"
+        source <(sed 's/\r$//' "$PROFILE_DIR/interfaces/$interface")
     fi
     if [[ $RFKill ]]; then
         rf_enable "$interface" "$RFKill" || return 1
@@ -190,7 +190,7 @@ start() {
     list_profiles | while read -r profile; do
         report_debug "Examining profile '$profile'"
         (
-          source "$PROFILE_DIR/$profile"
+          source <(sed 's/\r$//' "$PROFILE_DIR/$profile")
           [[ $Interface == "$interface" ]] || continue
           is_yes "${ExcludeAuto:-no}" && exit 1
           [[ $Connection != "wireless" ]] && exit 1
@@ -223,7 +223,7 @@ stop() {
 
     [[ -e "$pidfile" ]] && kill "$(< "$pidfile")"
     if [[ -x "$PROFILE_DIR/interfaces/$interface" ]]; then
-        source "$PROFILE_DIR/interfaces/$interface"
+        source <(sed 's/\r$//' "$PROFILE_DIR/interfaces/$interface")
     fi
     timeout_wait 1 '! wpa_is_active "$interface"' || wpa_stop "$interface"
     ip link set dev "$interface" down
